@@ -1,0 +1,20 @@
+spring:
+  main:
+    banner-mode: off
+
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mybatis_plus_db
+    username: root
+    password: 1234
+
+#start Mybatis Plus log, to see the sql statement
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+  #close the MP banner
+  global-config:
+    banner: off
+

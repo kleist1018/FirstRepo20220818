@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>新規メンバーの登録</title>
+
+    <link rel="stylesheet" href="../css/new_member.css">
+</head>
+<body>
+
+<div id="newMemberDiv" >
+    <form id="form" :model="member">
+        <h1 class="title">新規メンバー画面</h1><br>
+        <label for="memberName" class="info" >名前</label>
+        <input v-model="member.name" class="box" id="memberName" name="memberName" type="text"><br><br>
+
+        <label for="gender" class="info">性別</label>
+        <select v-model="member.gender" style="font-weight: bold" class="box" name="gender" id="gender">
+            <option label="男" value="1"></option>
+            <option label="女" value="0"></option>
+        </select><br><br>
+
+        <label for="age" class="info">年齢</label>
+        <input v-model="member.age" class="box" id="age" name="age" type="text"><br><br>
+
+
+        <label for="tel" class="info">携帯番号</label>
+        <input v-model="member.tel" class="box" id="tel" name="tel" type="text"><br><br>
+
+        <label for="address" class="info">住所</label>
+        <input v-model="member.address" style="width: 280px " class="box" id="address" name="address" type="text"><br>
+
+        <div id="newMBtn">
+            <input type="submit" class="btn" @click="addNewMember" value="新規追加">
+            <input type="button" class="btn" onclick="backToMenu()" value="メニュー画面に戻る">
+        </div>
+    </form>
+
+</div>
+
+<script src="../js/Vue.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+
+<script>
+
+    function backToMenu(){
+        window.location.href="../index.html"
+    }
+
+
+    new Vue({
+        el: "#newMemberDiv",
+
+        methods: {
+            addNewMember(){
+                axios.post("/members",this.member).then((resp) =>{
+                    if (resp.data.code === 20011){
+                        this.$message.success("登録成功。")
+                    }else if (resp.data.code === 20010){
+                        this.$message.error("登録失敗。入力をチェックしなさい。")
+                    }else {
+                        this.$message.error(resp.data.msg)
+                    }
+                })
+
+            }
+        },
+
+        data() {
+            return{
+                member: {
+                    id: '',
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
+                },
+            }
+        }
+
+    })
+</script>
+</body>
+</html>

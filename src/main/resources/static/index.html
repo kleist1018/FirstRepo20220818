@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Softusing Member System</title>
+
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+<!--<div id="menu">-->
+
+    <h1 class="title">株式会社ソフトユージング新人教育管理サイト</h1><br>
+
+
+    <h3 style="text-align: center;color: aliceblue">メニュー</h3><br>
+
+    <div>
+        <button class="left" id="1" onclick="addMember()">
+            １．新規メンバー
+        </button>
+        <button class="right" id="2" onclick="viewMembers()">
+            ２．メンバー管理
+        </button>
+    </div>
+    <br>
+    <br>
+    <div>
+        <button class="left" id="3" onclick="addScore()">
+            ３．新規成績
+        </button>
+        <button class="right" id="4" onclick="viewScores()">
+            ４．成績管理
+        </button>
+    </div>
+
+
+<!--</div>-->
+
+<script src="js/Vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+
+<script>
+    function addMember(){
+        window.location.href="./pages/new_member.html"
+    }
+
+    function viewMembers(){
+        window.location.href="./pages/member.html"
+    }
+
+    function addScore(){
+        window.location.href="./pages/new_score.html"
+    }
+
+    function viewScores(){
+        window.location.href="./pages/score.html"
+    }
+</script>
+</body>
+</html>

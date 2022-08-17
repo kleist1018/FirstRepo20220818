@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>新規成績画面</title>
+    <link rel="stylesheet" href="../css/new_score.css">
+</head>
+<body>
+<div id="newScoreDiv">
+    <form action="/scores" method="post" id="form">
+        <h1 class="title">新規成績画面</h1><br>
+        <label for="memberName" class="info" >名前</label>
+        <input class="box" id="memberName" name="memberName" type="text">
+
+        <label for="subject" class="info">科目</label>
+        <select style="font-weight: bold" class="box" name="subject" id="subject">
+            <option label="JAVA" value="1"></option>
+            <option label="HTML" value="2"></option>
+            <option label="JS" value="3"></option>
+            <option label="C#" value="4"></option>
+        </select>
+
+        <label for="score" class="info" >成績</label>
+        <input class="box" id="score" name="score" type="text">
+        <br><br>
+        <div id="newSBtn">
+            <input type="submit" class="btn" value="新規追加" @click="addNewScore">
+            <input type="button" class="btn" value="メニュー画面に戻る" onclick="backToMenu()">
+        </div>
+    </form>
+</div>
+
+<script src="../js/Vue.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script>
+    function backToMenu(){
+        window.location.href="../index.html"
+    }
+
+    new Vue({
+        el: "#newScoreDiv",
+
+        methods: {
+            addNewScore(){
+                axios.post("/scores",this.score).then((resp) =>{
+                    if (resp.data.code === 20011){
+                        this.$message.success("記録成功。")
+                    }else if (resp.data.code === 20010){
+                        this.$message.error("記録失敗。入力をチェックしなさい。")
+                    }else {
+                        this.$message.error(resp.data.msg)
+                    }
+                })
+            }
+        },
+
+        data() {
+            return {
+                score: {
+                    id: '',
+                    name: '',
+                    subject: '',
+                    grade: '',
+                }
+            }
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+html{
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    margin: 0;
+    padding: 0;
+    background-color: slategray;
+}
+
+
+.title{
+    text-align: center;
+}
+
+.queryCondition{
+    font-weight: bold;
+}
+
+.bottom-form-div{
+    text-align: right;
+}
+
+.info{
+    display: inline-flex;
+    width: 180px;
+    text-align-last: justify;
+    font-weight: bold;
+}
+.bottomBtn{
+    width: 180px;
+}

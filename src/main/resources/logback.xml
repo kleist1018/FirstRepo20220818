@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <!--no need any content, to cancel the verbose log on console printed by springboot-->
+</configuration>

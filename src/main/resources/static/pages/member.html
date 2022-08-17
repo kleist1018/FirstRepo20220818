@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>メンバー管理</title>
+    <link rel="stylesheet" href="../css/member.css">
+
+    <!--here combine with tableRowClassName can offer each row different color-->
+    <style>
+        .el-table .warning-row {
+            /*background: oldlace;*/
+            background: #999999;
+        }
+
+        .el-table .success-row {
+            /*background: #f0f9eb;*/
+            background: #CCCCCC;
+        }
+    </style>
+
+
+</head>
+<body>
+<div id="app">
+    <h1 class="title">メンバー管理</h1>
+
+    <el-form :inline="true" :model="member" class="query-top-form" size="mini">
+
+        <el-form-item label="名前" class="queryCondition">
+            <el-input v-model="member.name" placeholder="Name"></el-input>
+        </el-form-item>
+
+        <el-form-item label="性別" class="queryCondition">
+            <el-select v-model="member.gender" placeholder="Gender" clearable>
+                <el-option label="男" value="1"></el-option>
+                <el-option label="女" value="0"></el-option>
+            </el-select>
+        </el-form-item>
+
+        <el-form-item label="年齢" class="queryCondition">
+            <el-input v-model="member.age" placeholder="Age"></el-input>
+        </el-form-item>
+
+        <el-form-item>
+            <el-button type="primary" @click="querySubmit">Query</el-button>
+        </el-form-item>
+    </el-form>
+
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%"
+                :row-class-name="tableRowClassName"
+                @selection-change="handleSelectionChange">
+            <el-table-column
+                    type="selection"
+                    align="center"
+                    width="55">
+            </el-table-column>
+            <el-table-column
+                    label="番号"
+                    align="center"
+                    type="index"
+                    width="50">
+            </el-table-column>
+            <el-table-column
+                    prop="name"
+                    label="名前"
+                    align="center"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="gender"
+                    label="性別"
+                    align="center"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="age"
+                    label="年齢"
+                    align="center"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="tel"
+                    label="携帯番号"
+                    align="center">
+            </el-table-column>
+
+            <el-table-column
+                    prop="address"
+                    label="住所"
+                    align="center">
+            </el-table-column>
+
+            <el-table-column
+
+                    label="操作"
+                    align="center">
+
+                <template slot-scope="scope">
+                    <el-row>
+                        <el-button type="primary" @click="startEdit(scope.row)">Edit</el-button>
+                    </el-row>
+                </template>
+
+            </el-table-column>
+        </el-table>
+    </template>
+
+
+    <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page.sync="currentPage"
+            :page-sizes="[5,10,15,30,50]"
+            :page-size="10"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="totalCount">
+    </el-pagination>
+    <div style="margin: 20px;"></div>
+
+    <div class="bottom-form-div">
+    <el-form :inline="true" :model="editMember"   size="mini">
+
+        <el-form-item label="名前" class="info">
+            <el-input v-model="editMember.name" placeholder="Name"></el-input>
+        </el-form-item>
+
+        <el-form-item label="性別" class="info">
+            <el-select v-model="editMember.gender" placeholder="Gender" clearable>
+                <el-option label="男" value="1"></el-option>
+                <el-option label="女" value="0"></el-option>
+            </el-select>
+        </el-form-item>
+
+        <el-form-item label="年齢" class="info">
+            <el-input v-model="editMember.age" placeholder="Age"></el-input>
+        </el-form-item>
+        <br>
+
+        <el-form-item label="携帯番号" class="info">
+            <el-input v-model="editMember.tel" placeholder="Phone Number"></el-input>
+        </el-form-item>
+
+        <el-form-item label="住所" class="info">
+            <el-input v-model="editMember.address" placeholder="Address"></el-input>
+        </el-form-item>
+        <br>
+        <el-form-item>
+            <el-button type="primary" class="bottomBtn" @click="submitEdit">更新する</el-button>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" class="bottomBtn" onclick="backToMenu()">メニュー画面に戻る</el-button>
+        </el-form-item>
+
+    </el-form>
+    </div>
+
+</div>
+
+<script src="../js/Vue.js"></script>
+<script src="../element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="../element-ui/lib/theme-chalk/index.css">
+<script src="../js/axios-0.18.0.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+
+<script>
+
+    function backToMenu(){
+        window.location.href="../index.html"
+    }
+
+
+    new Vue({
+        el: "#app",
+        mounted(){
+
+        },
+        methods: {
+            /* change the color of each row, combine with style at head part*/
+            tableRowClassName({row, rowIndex}) {
+                if ((rowIndex - 1) % 4 === 0) {
+                    return 'warning-row';
+                } else if ((rowIndex - 3) % 4 === 0) {
+                    return 'success-row';
+                }
+                return '';
+            },
+
+            //分页
+            handleSizeChange(val) {
+                // console.log(`每页 ${val} 条`);
+
+                //重新设置当每页显示的条数
+                this.pageSize=val;
+                this.queryAll();
+            },
+            handleCurrentChange(val) {
+                // console.log(`当前页: ${val}`);
+
+                //重新设置当前页码
+                this.currentPage=val;
+                this.queryAll();
+
+            },
+
+        },
+        data() {
+            return{
+
+                /*for pagination ,here are all initial value*/
+                currentPage: 1,
+                totalCount : 60,
+                pageSize : 10,
+
+
+                member: {
+                    id: '',
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
+                },
+                editMember: {
+                    id: '',
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
+                },
+
+                tableData: [
+                {
+                    name: 'jason',
+                    gender: 'male',
+                    age: '30',
+                    tel: '4006165000',
+                    address: 'JetBrain IDEA No. 189'
+                },
+                {
+                    name: 'jason',
+                    gender: 'male',
+                    age: '30',
+                    tel: '4006165000',
+                    address: 'JetBrain IDEA No. 189'
+                },
+                {
+                    name: 'jason',
+                    gender: 'male',
+                    age: '30',
+                    tel: '4006165000',
+                    address: 'JetBrain IDEA No. 189'
+                },
+                {
+                    name: 'jason',
+                    gender: 'male',
+                    age: '30',
+                    tel: '4006165000',
+                    address: 'JetBrain IDEA No. 189'
+                },
+                {
+                    name: 'jason',
+                    gender: 'male',
+                    age: '30',
+                    tel: '4006165000',
+                    address: 'JetBrain IDEA No. 189'
+                },
+                {
+                    name: 'jason',
+                    gender: 'male',
+                    age: '30',
+                    tel: '4006165000',
+                    address: 'JetBrain IDEA No. 189'
+                },
+                {
+                    name: 'jason',
+                    gender: 'male',
+                    age: '30',
+                    tel: '4006165000',
+                    address: 'JetBrain IDEA No. 189'
+                },
+
+                ]
+            }
+        }
+    })
+</script>
+</body>
+</html>
