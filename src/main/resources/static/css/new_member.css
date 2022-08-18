@@ -36,6 +36,10 @@ body {
     margin-top: 30px;
 }
 
+.btn:hover{
+    background-color: rgba(120, 169, 254, .7);
+}
+
 .btn{
     border-color: cornsilk;
     background-color: rgba(100, 149, 237, .7);

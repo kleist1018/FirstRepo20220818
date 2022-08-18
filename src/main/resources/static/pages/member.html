@@ -32,8 +32,8 @@
 
         <el-form-item label="性別" class="queryCondition">
             <el-select v-model="member.gender" placeholder="Gender" clearable>
-                <el-option label="男" value="1"></el-option>
-                <el-option label="女" value="0"></el-option>
+                <el-option label="男" value="男"></el-option>
+                <el-option label="女" value="女"></el-option>
             </el-select>
         </el-form-item>
 
@@ -100,7 +100,7 @@
 
                 <template slot-scope="scope">
                     <el-row>
-                        <el-button type="primary" @click="startEdit(scope.row)">Edit</el-button>
+                        <el-button type="primary" @click="startEditForm(scope.row)">Edit</el-button>
                     </el-row>
                 </template>
 
@@ -118,6 +118,7 @@
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalCount">
     </el-pagination>
+
     <div style="margin: 20px;"></div>
 
     <div class="bottom-form-div">
@@ -129,8 +130,8 @@
 
         <el-form-item label="性別" class="info">
             <el-select v-model="editMember.gender" placeholder="Gender" clearable>
-                <el-option label="男" value="1"></el-option>
-                <el-option label="女" value="0"></el-option>
+                <el-option label="男" value="男" ></el-option>
+                <el-option label="女" value="男"></el-option>
             </el-select>
         </el-form-item>
 
@@ -174,10 +175,59 @@
 
     new Vue({
         el: "#app",
-        mounted(){
-
+        created(){
+            this.getAll()
         },
         methods: {
+
+            getAll(){
+                axios.get("/members").then((resp)=>{
+                    this.tableData = resp.data.data//the first data is result class, the second is data in result
+                })
+
+                // axios({
+                //     /*
+                //     * for both normal query and condition query, here use both data:{} and url? to transit params
+                //     * and, all query through selectByPageWithCondition method
+                //     */
+                //     method: "post",
+                //     url: "http://localhost:8080/JavaWeb_last/brand/selectByPageWithCondition?currentPage="+this.currentPage+"&pageSize="+this.pageSize,
+                //     data:this.member
+                // }).then(resp => {
+                //     //data for table
+                //     this.tableData = resp.data.rowsInPage;//{ rowsInPage : [], totalCount : int }
+                //     this.totalCount = resp.data.totalCount;
+                // })
+            },
+
+            startEditForm(row) {
+                axios.get("/members/"+row.id).then((res)=>{
+                    if (res.data.code === 20041){
+                        this.editMember = res.data.data
+
+                    }else {
+                        this.$message.error(res.data.msg)
+                    }
+                })
+            },
+            resetEditForm() {
+                this.resetEditForm();
+            },
+            submitEdit(){
+                axios.put("/members",this.editMember).then((res) => {
+                    if (res.data.code === 20011){
+                        // this.resetEditForm()
+                        this.$message.success("Addition succeed.")
+                    }else if (res.data.code === 20010){
+                        this.$message.error("Addition failed.")
+                    }else {
+                        this.$message.error(res.data.msg)
+                    }
+                }).finally(()=>{
+                    this.getAll()
+                })
+            },
+
             /* change the color of each row, combine with style at head part*/
             tableRowClassName({row, rowIndex}) {
                 if ((rowIndex - 1) % 4 === 0) {
@@ -211,7 +261,7 @@
 
                 /*for pagination ,here are all initial value*/
                 currentPage: 1,
-                totalCount : 60,
+                totalCount : 0,
                 pageSize : 10,
 
 
@@ -234,53 +284,76 @@
 
                 tableData: [
                 {
-                    name: 'jason',
-                    gender: 'male',
-                    age: '30',
-                    tel: '4006165000',
-                    address: 'JetBrain IDEA No. 189'
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
                 },
                 {
-                    name: 'jason',
-                    gender: 'male',
-                    age: '30',
-                    tel: '4006165000',
-                    address: 'JetBrain IDEA No. 189'
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
                 },
                 {
-                    name: 'jason',
-                    gender: 'male',
-                    age: '30',
-                    tel: '4006165000',
-                    address: 'JetBrain IDEA No. 189'
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
                 },
                 {
-                    name: 'jason',
-                    gender: 'male',
-                    age: '30',
-                    tel: '4006165000',
-                    address: 'JetBrain IDEA No. 189'
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
                 },
                 {
-                    name: 'jason',
-                    gender: 'male',
-                    age: '30',
-                    tel: '4006165000',
-                    address: 'JetBrain IDEA No. 189'
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
                 },
                 {
-                    name: 'jason',
-                    gender: 'male',
-                    age: '30',
-                    tel: '4006165000',
-                    address: 'JetBrain IDEA No. 189'
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
+                },
+
+                {
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
                 },
                 {
-                    name: 'jason',
-                    gender: 'male',
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
+                },
+                {
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
+                },
+
+                {//for example
+                    name: '赵钱孙',
+                    gender: '男',
                     age: '30',
-                    tel: '4006165000',
-                    address: 'JetBrain IDEA No. 189'
+                    tel: '4006185000',
+                    address: '东京上野1-2-3 101'
                 },
 
                 ]

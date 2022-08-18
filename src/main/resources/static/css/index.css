@@ -21,6 +21,10 @@ html{
     background-size: auto ;
 }
 
+button:hover{
+    background-color: rgba(130, 155, 254, .7);
+}
+
 .left{
     width: 220px;
     height: 80px;
