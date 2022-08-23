@@ -12,8 +12,20 @@ html{
     text-align: center;
 }
 
+.label{
+    font-weight: bold;
+}
 .queryCondition{
     font-weight: bold;
+    width: 90px;
+}
+.ageTO{
+    color: dimgray;
+    font-weight: bold;
+
+}
+.ageSpace{
+    width: 80px;
 }
 
 .bottom-form-div{
@@ -24,7 +36,7 @@ html{
     /*text-align: right;*/
     display: inline-flex;
     width: 180px;
-    text-align-last: justify;
+    text-align-last: left;
     font-weight: bold;
 }
 .bottomBtn{

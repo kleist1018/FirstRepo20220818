@@ -1,6 +1,8 @@
 package com.softusing.controller;
 
 import com.softusing.domain.Member;
+import com.softusing.domain.MemberForCondition;
+import com.softusing.domain.PageUnitOfMember;
 import com.softusing.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -41,4 +43,13 @@ public class MemberController {
         boolean flag = memberService.update(member);
         return new Result(flag, flag ? Code.UPDATE_OK : Code.UPDATE_ERR);
     }
+
+    @GetMapping({"/{currentPage}","/{pageSize}"})
+    public Result selectWithConditionByPage(@PathVariable int currentPage, @PathVariable int pageSize, @RequestBody Member member){
+        PageUnitOfMember<Member> pageUnitOfMember = memberService.selectWithConditionByPage(currentPage, pageSize, member);
+        Integer code = pageUnitOfMember != null ? Code.GET_OK :Code.GET_ERR;
+        String msg =  pageUnitOfMember != null ? "" : "データ読込失敗、もう一度やり直してください。";
+        return new Result(pageUnitOfMember,code,msg);
+    }
+
 }

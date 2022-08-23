@@ -26,19 +26,30 @@
 
     <el-form :inline="true" :model="member" class="query-top-form" size="mini">
 
-        <el-form-item label="名前" class="queryCondition">
-            <el-input v-model="member.name" placeholder="Name"></el-input>
+        <el-form-item label="名前" class="label">
+            <el-input v-model="member.name" placeholder="Name" class="queryCondition"></el-input>
         </el-form-item>
 
-        <el-form-item label="性別" class="queryCondition">
-            <el-select v-model="member.gender" placeholder="Gender" clearable>
+        <el-form-item label="性別" class="label">
+            <el-select v-model="member.gender" placeholder="Gender" class="queryCondition" clearable>
                 <el-option label="男" value="男"></el-option>
                 <el-option label="女" value="女"></el-option>
             </el-select>
         </el-form-item>
 
-        <el-form-item label="年齢" class="queryCondition">
-            <el-input v-model="member.age" placeholder="Age"></el-input>
+        <el-form-item label="年齢" :rules="rules" class="label"
+                      :rules="rules">
+
+<!--            <el-input v-model="member.ageMin" placeholder="Age"></el-input>-->
+<!--            <el-input v-model="member.ageMax" placeholder="Age"></el-input>-->
+                <el-form-item  prop="ageMin" class="ageSpace">
+                    <el-input v-model="member.age" placeholder="Age Min" />
+                </el-form-item>
+                <!--here is for a center ~ -->
+                <span class="ageTO">~&nbsp&nbsp</span>
+                <el-form-item prop="ageMax" class="ageSpace">
+                    <el-input v-model="member.ageMax" placeholder="Age Max"/>
+                </el-form-item>
         </el-form-item>
 
         <el-form-item>
@@ -108,7 +119,7 @@
         </el-table>
     </template>
 
-
+    <div style="margin: 20px;"></div>
     <el-pagination
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
@@ -117,9 +128,8 @@
             :page-size="10"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalCount">
-    </el-pagination>
 
-    <div style="margin: 20px;"></div>
+    </el-pagination>
 
     <div class="bottom-form-div">
     <el-form :inline="true" :model="editMember"   size="mini">
@@ -168,6 +178,8 @@
 
 <script>
 
+
+
     function backToMenu(){
         window.location.href="../index.html"
     }
@@ -176,29 +188,94 @@
     new Vue({
         el: "#app",
         created(){
-            this.getAll()
+            this.forEmptyPage()
         },
         methods: {
 
             getAll(){
-                axios.get("/members").then((resp)=>{
-                    this.tableData = resp.data.data//the first data is result class, the second is data in result
-                })
-
-                // axios({
-                //     /*
-                //     * for both normal query and condition query, here use both data:{} and url? to transit params
-                //     * and, all query through selectByPageWithCondition method
-                //     */
-                //     method: "post",
-                //     url: "http://localhost:8080/JavaWeb_last/brand/selectByPageWithCondition?currentPage="+this.currentPage+"&pageSize="+this.pageSize,
-                //     data:this.member
-                // }).then(resp => {
-                //     //data for table
-                //     this.tableData = resp.data.rowsInPage;//{ rowsInPage : [], totalCount : int }
-                //     this.totalCount = resp.data.totalCount;
+                // axios.get("/members").then((resp)=>{
+                //     this.tableData = resp.data.data//the first data is result class, the second is data in result
                 // })
+
+                axios({
+                    /*
+                    * here use both data:{} and url? to transit params
+                    * the post ways is for condition have been input in the three condition box at the top
+                    * and, all query through selectByPageWithCondition method
+                    */
+                    method: "get",
+                    url: "http://localhost:8080/members?currentPage="+this.currentPage+"&pageSize="+this.pageSize,
+                    data:this.member
+                }).then(resp => {
+                    //data for table
+                    this.tableData = resp.data.data.memberRowsInPage;//{ memberRowsInPage : [], totalCount : int }
+                    this.totalCount = resp.data.data.totalCount;
+
+                })
             },
+
+            forEmptyPage(){
+                for (let i = 0; i < this.pageSize; i++) {
+                    this.table.tableData[i]=this.tableData.push(this.emptyRow)
+                }
+            },
+
+            querySubmit(){
+                if (null == this.member.name && null == this.member.gender && null == this.member.age &&
+                null == this.member.ageMax){
+                    this.$message.error("请至少输入一个条件进行查询");
+                }else {
+                    this.getAll();
+                    if (null != this.tableData && this.tableData.length > 0){
+                        this.$message.success("查询结果如下")
+                        let startRow = this.tableData.length
+                        for (let i = startRow; i < this.pageSize; i++) {
+                            this.tableData[i]={
+                                name: '',
+                                gender: '',
+                                age: '',
+                                tel: '',
+                                address: ''
+                            }
+                        }
+                    }else {
+                        this.$message.info("未查询到满足条件的成员，请重新查询")
+                        this.forEmptyPage();
+                    }
+                }
+            },
+
+            /*年龄框共通认证*/
+            validateCom(rule, value, callback) {
+                const num = Number(value);
+                if (Number.isInteger(num)) {
+                    if (num < this.MIN_AGE) {
+                        return callback(new Error(`输入值必须大于${this.MIN_AGE}`));
+                    } else if (num > this.MAX_AGE) {
+                        return callback(new Error(`输入值必须小于${this.MAX_AGE}`));
+                    }
+                    return callback();
+                }
+                return callback(new Error('输入值必须为正整数'));
+            },
+            /*年龄框分别认证*/
+            validateMin(rule, value, callback) {
+                const num = Number(value);
+                const max = Number(this.member.ageMax);
+                if (!max || num < max) {
+                    return callback();
+                }
+                return callback(new Error('输入值不得大于最大阈值'));
+            },
+            validateMax(rule, value, callback) {
+                const num = Number(value);
+                const min = Number(this.member.ageMin);
+                if (!min || num > min) {
+                    return callback();
+                }
+                return callback(new Error('输入值不得小于最小阈值'));
+            },
+
 
             startEditForm(row) {
                 axios.get("/members/"+row.id).then((res)=>{
@@ -244,18 +321,19 @@
 
                 //重新设置当每页显示的条数
                 this.pageSize=val;
-                this.queryAll();
+                this.getAll();
             },
             handleCurrentChange(val) {
                 // console.log(`当前页: ${val}`);
 
                 //重新设置当前页码
                 this.currentPage=val;
-                this.queryAll();
+                this.getAll();
 
             },
 
         },
+
         data() {
             return{
 
@@ -264,15 +342,41 @@
                 totalCount : 0,
                 pageSize : 10,
 
+                MIN_AGE:20,
+                MAX_AGE:70,
+
+                <!--this can put in rules but not here: { required: true, message: '必填项，请维护', trigger: 'blur' },-->
+                rules:{
+                        ageMin: [
+                                 { validator: this.validateCom, trigger:'blur' },
+                                    { validator: this.validateMin, trigger: 'blur' },],
+                        ageMax: [
+                                { validator: this.validateCom, trigger: 'blur' },
+                                 { validator: this.validateMax, trigger: 'blur' },]
+                         },
+
+                /*for multi select box, the selected member and their ids */
+                multiSelection:[],
+                selectedIds:[],
+
 
                 member: {
                     id: '',
                     name: '',
                     gender: '',
                     age: '',
+                    ageMax:'',
                     tel: '',
                     address: ''
                 },
+
+                // memberForCondition:{
+                //     name:'',
+                //     gender:'',
+                //     age:'',
+                //     ageMax:''
+                // },
+
                 editMember: {
                     id: '',
                     name: '',
@@ -282,79 +386,86 @@
                     address: ''
                 },
 
+                emptyRow:{
+                    name: '',
+                    gender: '',
+                    age: '',
+                    tel: '',
+                    address: ''
+                },
                 tableData: [
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-                {
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
-
-                {//for example
-                    name: '赵钱孙',
-                    gender: '男',
-                    age: '30',
-                    tel: '4006185000',
-                    address: '东京上野1-2-3 101'
-                },
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                //
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                // {
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+                //
+                // {//for example
+                //     name: '赵钱孙',
+                //     gender: '男',
+                //     age: '30',
+                //     tel: '4006185000',
+                //     address: '东京上野1-2-3 101'
+                // },
 
                 ]
             }
