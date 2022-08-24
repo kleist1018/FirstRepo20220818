@@ -24,6 +24,7 @@ public class MemberController {
 
     @GetMapping
     public Result getAllMember(){
+
         List<Member> allMember = memberService.getAllMember();
         Integer code = allMember != null ? Code.GET_OK :Code.GET_ERR;
         String msg =  allMember != null ? "" : "データ読込失敗、もう一度やり直してください。";
@@ -44,9 +45,15 @@ public class MemberController {
         return new Result(flag, flag ? Code.UPDATE_OK : Code.UPDATE_ERR);
     }
 
-    @GetMapping({"/{currentPage}","/{pageSize}"})
-    public Result selectWithConditionByPage(@PathVariable int currentPage, @PathVariable int pageSize, @RequestBody Member member){
+    @PostMapping({"/{currentPage}/{pageSize}"})
+    public Result selectWithConditionByPage(@PathVariable int currentPage, @PathVariable int pageSize,
+                                            @RequestBody Member member){
         PageUnitOfMember<Member> pageUnitOfMember = memberService.selectWithConditionByPage(currentPage, pageSize, member);
+        System.out.println("===================CHECK FROM HERE=====================");
+        System.out.println("CURRENT PAGE IS: "+currentPage);
+        System.out.println("PAGE SIZE IS: "+pageSize);
+        System.out.println("MEMBER IS: "+member);
+
         Integer code = pageUnitOfMember != null ? Code.GET_OK :Code.GET_ERR;
         String msg =  pageUnitOfMember != null ? "" : "データ読込失敗、もう一度やり直してください。";
         return new Result(pageUnitOfMember,code,msg);

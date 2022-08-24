@@ -1,6 +1,5 @@
 package com.softusing.domain;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

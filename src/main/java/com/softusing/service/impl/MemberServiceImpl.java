@@ -43,14 +43,15 @@ public class MemberServiceImpl implements MemberService {
         //wrap the current page and page size for Mybatis plus
         IPage<Member> pageData = new Page<>(currentPage,pageSize);
 
+
         //new a wrapper to wrap the condition
         LambdaQueryWrapper<Member> wrapper = new LambdaQueryWrapper<>();
         //name and gender condition
-        wrapper.eq(null != member.getName(), Member::getName, member.getName());
-        wrapper.eq(null != member.getGender(),Member::getGender, member.getGender());
+        wrapper.like(!"".equals(member.getName()), Member::getName, member.getName());
+        wrapper.eq(!"".equals(member.getGender()),Member::getGender, member.getGender());
         //age condition
         wrapper.ge(null != member.getAge(), Member::getAge, member.getAge());
-        wrapper.le(null != member.getAgeMax(), Member::getAge, member.getAge());
+        wrapper.le(null != member.getAgeMax(), Member::getAge, member.getAgeMax());
 
         memberDao.selectPage(pageData, wrapper);
 

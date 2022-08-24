@@ -40,8 +40,6 @@
         <el-form-item label="年齢" :rules="rules" class="label"
                       :rules="rules">
 
-<!--            <el-input v-model="member.ageMin" placeholder="Age"></el-input>-->
-<!--            <el-input v-model="member.ageMax" placeholder="Age"></el-input>-->
                 <el-form-item  prop="ageMin" class="ageSpace">
                     <el-input v-model="member.age" placeholder="Age Min" />
                 </el-form-item>
@@ -131,30 +129,30 @@
 
     </el-pagination>
 
-    <div class="bottom-form-div">
-    <el-form :inline="true" :model="editMember"   size="mini">
+    <div class="bottom-form-div" >
+    <el-form ref="editMember" :inline="true" :model="editMember" size="mini">
 
-        <el-form-item label="名前" class="info">
+        <el-form-item label="名前" prop="name" class="info">
             <el-input v-model="editMember.name" placeholder="Name"></el-input>
         </el-form-item>
 
-        <el-form-item label="性別" class="info">
+        <el-form-item label="性別" prop="gender" class="info">
             <el-select v-model="editMember.gender" placeholder="Gender" clearable>
                 <el-option label="男" value="男" ></el-option>
-                <el-option label="女" value="男"></el-option>
+                <el-option label="女" value="女"></el-option>
             </el-select>
         </el-form-item>
 
-        <el-form-item label="年齢" class="info">
+        <el-form-item label="年齢" prop="age" class="info">
             <el-input v-model="editMember.age" placeholder="Age"></el-input>
         </el-form-item>
         <br>
 
-        <el-form-item label="携帯番号" class="info">
+        <el-form-item label="携帯番号" prop="tel" class="info">
             <el-input v-model="editMember.tel" placeholder="Phone Number"></el-input>
         </el-form-item>
 
-        <el-form-item label="住所" class="info">
+        <el-form-item label="住所" prop="address" class="info">
             <el-input v-model="editMember.address" placeholder="Address"></el-input>
         </el-form-item>
         <br>
@@ -179,7 +177,6 @@
 <script>
 
 
-
     function backToMenu(){
         window.location.href="../index.html"
     }
@@ -188,7 +185,7 @@
     new Vue({
         el: "#app",
         created(){
-            this.forEmptyPage()
+            // this.forEmptyPage()
         },
         methods: {
 
@@ -197,55 +194,55 @@
                 //     this.tableData = resp.data.data//the first data is result class, the second is data in result
                 // })
 
-                axios({
-                    /*
-                    * here use both data:{} and url? to transit params
-                    * the post ways is for condition have been input in the three condition box at the top
-                    * and, all query through selectByPageWithCondition method
-                    */
-                    method: "get",
-                    url: "http://localhost:8080/members?currentPage="+this.currentPage+"&pageSize="+this.pageSize,
-                    data:this.member
-                }).then(resp => {
-                    //data for table
-                    this.tableData = resp.data.data.memberRowsInPage;//{ memberRowsInPage : [], totalCount : int }
+                axios.post("/members/"+this.currentPage+"/"+this.pageSize,this.member).then(resp => {
+                    //结果处理1，先判断查到数据没有，让提示框弹出
                     this.totalCount = resp.data.data.totalCount;
+                    /**
+                     * 必须用一个局部变量ifZero来做判断条件，否则this.totalCount全局变量
+                     * 在新的查询结果还没出来的时候，就能被读取旧的值，从而跳一次旧值的提示框
+                     * 且只在查询的第一页显示时弹出提示框，要把当前页码页带入
+                     */
+                    let ifZero = this.totalCount;
 
+                    if (ifZero > 0 && this.everyTimePress === 1){
+                        this.$message.success("查询成功，结果如下")
+
+                    }else if (ifZero === 0 && this.everyTimePress === 1) {
+                        // this.$message.info("未查询到满足条件的成员，请重新查询")//two ways writing here
+                        this.$message({
+                            message:'未查询到满足条件的成员，请重新查询',
+                            type:'info'
+                        })
+                        // this.forEmptyPage();
+                    }
+                    //结果处理2，这一句放这里，尽量让弹出框先出
+                    this.tableData = resp.data.data.memberRowsInPage;//{ memberRowsInPage : [], totalCount : int }
+
+                    //这个加1，确保除了摁下query键的查询会弹框，选择分页的查询不弹
+                    this.everyTimePress += 1
                 })
             },
 
-            forEmptyPage(){
-                for (let i = 0; i < this.pageSize; i++) {
-                    this.table.tableData[i]=this.tableData.push(this.emptyRow)
-                }
-            },
+            // forEmptyPage(){
+            //     for (let i = 0; i < this.pageSize; i++) {
+            //         this.table.tableData[i]=this.tableData.push(this.emptyRow)
+            //     }
+            // },
 
             querySubmit(){
-                if (null == this.member.name && null == this.member.gender && null == this.member.age &&
-                null == this.member.ageMax){
+
+                if ("" === this.member.name && "" === this.member.gender && "" === this.member.age
+                    && "" === this.member.ageMax){
                     this.$message.error("请至少输入一个条件进行查询");
                 }else {
+                    //每次按下query键将页面这个参数值设置为1
+                    this.currentPage = 1
+                    this.everyTimePress = 1
                     this.getAll();
-                    if (null != this.tableData && this.tableData.length > 0){
-                        this.$message.success("查询结果如下")
-                        let startRow = this.tableData.length
-                        for (let i = startRow; i < this.pageSize; i++) {
-                            this.tableData[i]={
-                                name: '',
-                                gender: '',
-                                age: '',
-                                tel: '',
-                                address: ''
-                            }
-                        }
-                    }else {
-                        this.$message.info("未查询到满足条件的成员，请重新查询")
-                        this.forEmptyPage();
-                    }
                 }
             },
 
-            /*年龄框共通认证*/
+            /*年龄框共通认证，尚未实现*/
             validateCom(rule, value, callback) {
                 const num = Number(value);
                 if (Number.isInteger(num)) {
@@ -258,7 +255,7 @@
                 }
                 return callback(new Error('输入值必须为正整数'));
             },
-            /*年龄框分别认证*/
+            /*年龄框分别认证，尚未实现*/
             validateMin(rule, value, callback) {
                 const num = Number(value);
                 const max = Number(this.member.ageMax);
@@ -288,14 +285,16 @@
                 })
             },
             resetEditForm() {
-                this.resetEditForm();
+                    this.$refs.editMember.resetFields();
             },
             submitEdit(){
                 axios.put("/members",this.editMember).then((res) => {
-                    if (res.data.code === 20011){
-                        // this.resetEditForm()
+                    if (res.data.code === 20031){
+                        //清空表单
+                        this.resetEditForm()
+
                         this.$message.success("Addition succeed.")
-                    }else if (res.data.code === 20010){
+                    }else if (res.data.code === 20030){
                         this.$message.error("Addition failed.")
                     }else {
                         this.$message.error(res.data.msg)
@@ -336,11 +335,13 @@
 
         data() {
             return{
-
                 /*for pagination ,here are all initial value*/
                 currentPage: 1,
                 totalCount : 0,
                 pageSize : 10,
+
+                /*用这个变量来控制，只有点击query键的查询才弹出提示框，点页码的查询不弹*/
+                everyTimePress:1,
 
                 MIN_AGE:20,
                 MAX_AGE:70,
@@ -382,17 +383,19 @@
                     name: '',
                     gender: '',
                     age: '',
+                    ageMax:'',
                     tel: '',
                     address: ''
                 },
 
-                emptyRow:{
-                    name: '',
-                    gender: '',
-                    age: '',
-                    tel: '',
-                    address: ''
-                },
+                // emptyRow:{
+                //     name: '',
+                //     gender: '',
+                //     age: '',
+                //     tel: '',
+                //     address: ''
+                // },
+
                 tableData: [
                 // {
                 //     name: '',
